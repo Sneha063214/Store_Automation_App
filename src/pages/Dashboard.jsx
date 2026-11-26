@@ -40,7 +40,7 @@ export default function Dashboard({ setCurrentPage }) {
             Welcome to {settings.storeName}
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Real-time Kirana store performance, inventory status and today's billing overview.
+            Real-time Martify store performance, inventory status and today's billing overview.
           </p>
         </div>
         <div className="flex flex-wrap gap-2.5">

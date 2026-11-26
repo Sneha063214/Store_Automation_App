@@ -37,10 +37,10 @@ export default function Login() {
             <Store className="w-7 h-7" />
           </div>
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-            {settings.storeName || 'Kirana Store'}
+            {settings.storeName || 'Martify'}
           </h1>
           <p className="text-xs sm:text-sm text-sky-800 mt-1">
-            Store Management System &bull; Staff Login
+            Martify Store Management &bull; Staff Login
           </p>
         </div>
 

@@ -1,5 +1,5 @@
 export const INITIAL_SETTINGS = {
-  storeName: "Shree Ganesh Kirana & General Store",
+  storeName: "Martify",
   tagline: "Your Daily Grocery & Provisions Store",
   phone: "+91 98765 43210",
   address: "Shop No. 4, Main Bazaar Road, Near Old Post Office",

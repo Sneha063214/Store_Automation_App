@@ -34,7 +34,7 @@ export default function Header({ currentPage, setCurrentPage, setIsOpen }) {
         </button>
         <div>
           <h2 className="text-lg md:text-xl font-bold text-gray-800">
-            {titles[currentPage] || 'Kirana Store'}
+            {titles[currentPage] || 'Martify'}
           </h2>
           <p className="text-xs text-gray-500 hidden sm:block">
             {settings.storeName} &bull; {todayStr}

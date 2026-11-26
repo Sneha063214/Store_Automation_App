@@ -57,9 +57,9 @@ export default function Sidebar({ currentPage, setCurrentPage, isOpen, setIsOpen
             </div>
             <div>
               <h1 className="font-bold text-gray-900 text-sm leading-tight truncate max-w-[150px]">
-                {settings.storeName || 'Kirana Store'}
+                {settings.storeName || 'Martify'}
               </h1>
-              <p className="text-[11px] text-sky-700 font-medium">Store Management</p>
+              <p className="text-[11px] text-sky-700 font-medium">Martify Store Management</p>
             </div>
           </div>
           <button
