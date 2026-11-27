@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, ShoppingCart, LogOut, Store } from 'lucide-react';
+import { Menu, ShoppingCart, LogOut, GraduationCap } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 
 const titles = {
@@ -33,11 +33,17 @@ export default function Header({ currentPage, setCurrentPage, setIsOpen }) {
           <Menu className="w-5 h-5" />
         </button>
         <div>
-          <h2 className="text-lg md:text-xl font-bold text-gray-800">
-            {titles[currentPage] || 'Martify'}
-          </h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg md:text-xl font-bold text-gray-800">
+              {titles[currentPage] || 'Martify'}
+            </h2>
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-sky-50 text-sky-800 border border-sky-200">
+              <GraduationCap className="w-3.5 h-3.5 text-sky-600" />
+              ABESEC Ghaziabad
+            </span>
+          </div>
           <p className="text-xs text-gray-500 hidden sm:block">
-            {settings.storeName} &bull; {todayStr}
+            {settings.storeName} &bull; ABESEC Ghaziabad &bull; {todayStr}
           </p>
         </div>
       </div>

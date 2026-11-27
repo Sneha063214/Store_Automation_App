@@ -81,21 +81,39 @@ export function StoreProvider({ children }) {
     const cleanUser = username.trim().toLowerCase();
     const cleanPass = password.trim();
 
-    if (
-      (cleanUser === DEMO_USER.username && cleanPass === DEMO_USER.password) ||
-      (cleanUser === "admin" && cleanPass === "admin123") ||
-      (cleanUser === "kirana" && cleanPass === "123456") ||
-      (cleanUser.length >= 3 && cleanPass.length >= 4) // forgiving for demo purposes
-    ) {
+    if (cleanUser === "admin" && (cleanPass === "password123" || cleanPass === "admin123")) {
       const loggedInUser = {
-        username: cleanUser,
-        name: cleanUser === "admin" ? DEMO_USER.name : cleanUser.charAt(0).toUpperCase() + cleanUser.slice(1),
-        role: "Store Manager",
+        username: "admin",
+        name: "Admin User",
+        role: "Administrator",
       };
       setUser(loggedInUser);
       return { success: true };
     }
-    return { success: false, message: "Invalid username or password (use admin / password123)" };
+
+    if (cleanUser === "student" && (cleanPass === "student123" || cleanPass === "password123")) {
+      const loggedInUser = {
+        username: "student",
+        name: "Student Operator",
+        role: "Student / Cashier",
+      };
+      setUser(loggedInUser);
+      return { success: true };
+    }
+
+    if (
+      (cleanUser === DEMO_USER.username && cleanPass === DEMO_USER.password) ||
+      (cleanUser.length >= 3 && cleanPass.length >= 4) // forgiving for demo purposes
+    ) {
+      const loggedInUser = {
+        username: cleanUser,
+        name: cleanUser.charAt(0).toUpperCase() + cleanUser.slice(1),
+        role: cleanUser === "admin" ? "Administrator" : "Student / Cashier",
+      };
+      setUser(loggedInUser);
+      return { success: true };
+    }
+    return { success: false, message: "Invalid username or password. Use admin / password123 or student / student123" };
   };
 
   const logout = () => {

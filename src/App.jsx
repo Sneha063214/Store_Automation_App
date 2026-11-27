@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useStore } from './context/StoreContext';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
+import Footer from './components/Footer';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
@@ -67,6 +68,8 @@ export default function App() {
         <main className="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto">
           {renderPage()}
         </main>
+
+        <Footer />
       </div>
     </div>
   );

@@ -8,12 +8,22 @@ export const INITIAL_SETTINGS = {
   receiptFooter: "Thank you for shopping with us! Please visit again.",
 };
 
-export const DEMO_USER = {
-  username: "admin",
-  password: "password123",
-  name: "Ramesh Sharma",
-  role: "Store Manager",
+export const USERS = {
+  admin: {
+    username: "admin",
+    password: "password123",
+    name: "Admin User",
+    role: "Administrator",
+  },
+  student: {
+    username: "student",
+    password: "student123",
+    name: "Student Operator",
+    role: "Student / Cashier",
+  },
 };
+
+export const DEMO_USER = USERS.admin;
 
 export const INITIAL_PRODUCTS = [
   {
