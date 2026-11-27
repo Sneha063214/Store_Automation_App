@@ -182,7 +182,9 @@ export default function Dashboard({ setCurrentPage }) {
           <div className="mt-4 divide-y divide-gray-100">
             {lowStockProducts.length === 0 ? (
               <div className="text-center py-8 text-gray-500 text-xs">
-                🎉 All products have sufficient stock levels!
+                {products.length === 0
+                  ? "No products added yet. Click Add Product to start stocking your store."
+                  : "🎉 All products have sufficient stock levels!"}
               </div>
             ) : (
               lowStockProducts.slice(0, 5).map((item) => (

@@ -222,7 +222,9 @@ export default function POS() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {filteredProducts.length === 0 ? (
                 <div className="col-span-2 text-center py-12 text-gray-400 text-xs">
-                  No products found.
+                  {products.length === 0
+                    ? "Store catalog is currently empty. Go to Products page to add products before billing."
+                    : "No products found matching your search."}
                 </div>
               ) : (
                 filteredProducts.map((p) => {

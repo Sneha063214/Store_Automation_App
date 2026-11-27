@@ -10,14 +10,46 @@ import {
 
 const StoreContext = createContext();
 
+// Helper to determine if a username belongs to the demo showcase accounts
+const isDemoUsername = (username) => {
+  const u = (username || '').toLowerCase();
+  return u === 'admin' || u === 'student';
+};
+
+// Helper to generate a clean, empty store for new custom accounts
+const getFreshStoreState = (userName) => ({
+  settings: {
+    storeName: userName ? `${userName}'s Martify Store` : 'My Martify Store',
+    tagline: 'Retail & Grocery Store',
+    phone: '',
+    address: '',
+    gstin: '',
+    currency: '₹',
+    receiptFooter: 'Thank you for shopping with us! Please visit again.',
+  },
+  products: [],
+  suppliers: [],
+  sales: [],
+  purchases: [],
+});
+
+// Helper to get demo showcase store
+const getDemoStoreState = () => ({
+  settings: INITIAL_SETTINGS,
+  products: INITIAL_PRODUCTS,
+  suppliers: INITIAL_SUPPLIERS,
+  sales: INITIAL_SALES,
+  purchases: INITIAL_PURCHASES,
+});
+
 export function StoreProvider({ children }) {
-  // Auth state
+  // Current logged in user
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('kirana_user');
     return saved ? JSON.parse(saved) : null;
   });
 
-  // Registered users stored in localStorage
+  // Registered user accounts list
   const [registeredUsers, setRegisteredUsers] = useState(() => {
     const saved = localStorage.getItem('kirana_users');
     return saved
@@ -40,37 +72,40 @@ export function StoreProvider({ children }) {
         ];
   });
 
-  // Settings
-  const [settings, setSettings] = useState(() => {
-    const saved = localStorage.getItem('kirana_settings');
-    return saved ? JSON.parse(saved) : INITIAL_SETTINGS;
-  });
+  // Helper to load store data for a specific user
+  const loadStoreDataForUser = (currentUser) => {
+    if (!currentUser) {
+      return getDemoStoreState();
+    }
+    const username = currentUser.username.toLowerCase();
+    const storageKey = isDemoUsername(username)
+      ? 'martify_demo_store'
+      : `martify_user_store_${username}`;
 
-  // Products
-  const [products, setProducts] = useState(() => {
-    const saved = localStorage.getItem('kirana_products');
-    return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
-  });
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to parse saved store data', e);
+      }
+    }
 
-  // Suppliers
-  const [suppliers, setSuppliers] = useState(() => {
-    const saved = localStorage.getItem('kirana_suppliers');
-    return saved ? JSON.parse(saved) : INITIAL_SUPPLIERS;
-  });
+    if (isDemoUsername(username)) {
+      return getDemoStoreState();
+    }
+    return getFreshStoreState(currentUser.name);
+  };
 
-  // Sales
-  const [sales, setSales] = useState(() => {
-    const saved = localStorage.getItem('kirana_sales');
-    return saved ? JSON.parse(saved) : INITIAL_SALES;
-  });
+  const initialStore = loadStoreDataForUser(user);
 
-  // Purchases
-  const [purchases, setPurchases] = useState(() => {
-    const saved = localStorage.getItem('kirana_purchases');
-    return saved ? JSON.parse(saved) : INITIAL_PURCHASES;
-  });
+  const [settings, setSettings] = useState(initialStore.settings);
+  const [products, setProducts] = useState(initialStore.products);
+  const [suppliers, setSuppliers] = useState(initialStore.suppliers);
+  const [sales, setSales] = useState(initialStore.sales);
+  const [purchases, setPurchases] = useState(initialStore.purchases);
 
-  // Keep localStorage updated
+  // Sync user state with localStorage
   useEffect(() => {
     if (user) {
       localStorage.setItem('kirana_user', JSON.stringify(user));
@@ -79,31 +114,40 @@ export function StoreProvider({ children }) {
     }
   }, [user]);
 
+  // Sync registered users
   useEffect(() => {
     localStorage.setItem('kirana_users', JSON.stringify(registeredUsers));
   }, [registeredUsers]);
 
+  // Save current store data whenever anything changes for the active user
   useEffect(() => {
-    localStorage.setItem('kirana_settings', JSON.stringify(settings));
-  }, [settings]);
+    if (!user) return;
+    const username = user.username.toLowerCase();
+    const storageKey = isDemoUsername(username)
+      ? 'martify_demo_store'
+      : `martify_user_store_${username}`;
 
-  useEffect(() => {
-    localStorage.setItem('kirana_products', JSON.stringify(products));
-  }, [products]);
+    const currentData = {
+      settings,
+      products,
+      suppliers,
+      sales,
+      purchases,
+    };
+    localStorage.setItem(storageKey, JSON.stringify(currentData));
+  }, [user, settings, products, suppliers, sales, purchases]);
 
-  useEffect(() => {
-    localStorage.setItem('kirana_suppliers', JSON.stringify(suppliers));
-  }, [suppliers]);
+  // Helper to switch store state to a given user's saved data
+  const switchUserStore = (currentUser) => {
+    const store = loadStoreDataForUser(currentUser);
+    setSettings(store.settings);
+    setProducts(store.products);
+    setSuppliers(store.suppliers);
+    setSales(store.sales);
+    setPurchases(store.purchases);
+  };
 
-  useEffect(() => {
-    localStorage.setItem('kirana_sales', JSON.stringify(sales));
-  }, [sales]);
-
-  useEffect(() => {
-    localStorage.setItem('kirana_purchases', JSON.stringify(purchases));
-  }, [purchases]);
-
-  // Auth functions: Login
+  // Auth: Login with credentials (loads their saved data)
   const login = (username, password) => {
     const cleanUser = username.trim().toLowerCase();
     const cleanPass = password.trim();
@@ -119,31 +163,21 @@ export function StoreProvider({ children }) {
         name: foundUser.name,
         role: foundUser.role,
       };
+      switchUserStore(loggedInUser);
       setUser(loggedInUser);
       return { success: true };
     }
 
-    // 2. Default Fallback demo checks
+    // 2. Demo Fallback checks
     if (cleanUser === 'admin' && (cleanPass === 'password123' || cleanPass === 'admin123')) {
       const loggedInUser = { username: 'admin', name: 'Admin User', role: 'Administrator' };
+      switchUserStore(loggedInUser);
       setUser(loggedInUser);
       return { success: true };
     }
     if (cleanUser === 'student' && (cleanPass === 'student123' || cleanPass === 'password123')) {
       const loggedInUser = { username: 'student', name: 'Student Operator', role: 'Student / Cashier' };
-      setUser(loggedInUser);
-      return { success: true };
-    }
-
-    if (
-      (cleanUser === DEMO_USER.username && cleanPass === DEMO_USER.password) ||
-      (cleanUser.length >= 3 && cleanPass.length >= 4)
-    ) {
-      const loggedInUser = {
-        username: cleanUser,
-        name: cleanUser.charAt(0).toUpperCase() + cleanUser.slice(1),
-        role: cleanUser === 'admin' ? 'Administrator' : 'Student / Cashier',
-      };
+      switchUserStore(loggedInUser);
       setUser(loggedInUser);
       return { success: true };
     }
@@ -154,7 +188,7 @@ export function StoreProvider({ children }) {
     };
   };
 
-  // Auth functions: Register / Create New Account
+  // Auth: Register (Creates fresh, clean, empty store for new account)
   const register = (userData) => {
     const cleanUser = userData.username?.trim().toLowerCase();
     const cleanPass = userData.password?.trim();
@@ -171,11 +205,11 @@ export function StoreProvider({ children }) {
       return { success: false, message: 'Password must be at least 4 characters.' };
     }
 
-    // Check if username already exists in registeredUsers
+    // Check duplicate username
     const exists = registeredUsers.some(
       (u) => u.username.toLowerCase() === cleanUser
     );
-    if (exists || cleanUser === 'admin' || cleanUser === 'student') {
+    if (exists || isDemoUsername(cleanUser)) {
       return {
         success: false,
         message: 'This username is already taken. Please choose another username.',
@@ -193,7 +227,21 @@ export function StoreProvider({ children }) {
 
     setRegisteredUsers((prev) => [...prev, newUser]);
 
-    // Automatically log in the user
+    // Initialize fresh empty store for this new user
+    const freshStore = getFreshStoreState(cleanName);
+    localStorage.setItem(
+      `martify_user_store_${cleanUser}`,
+      JSON.stringify(freshStore)
+    );
+
+    // Apply fresh store values
+    setSettings(freshStore.settings);
+    setProducts(freshStore.products);
+    setSuppliers(freshStore.suppliers);
+    setSales(freshStore.sales);
+    setPurchases(freshStore.purchases);
+
+    // Set logged in user
     const loggedInUser = {
       username: newUser.username,
       name: newUser.name,
@@ -324,7 +372,7 @@ export function StoreProvider({ children }) {
       notes: purchaseData.notes?.trim() || '',
     };
 
-    // Increase product stock & update purchase rate if applicable
+    // Increase product stock & update purchase rate
     setProducts((prev) =>
       prev.map((prod) => {
         if (prod.id === purchaseData.productId) {
@@ -347,35 +395,31 @@ export function StoreProvider({ children }) {
     setSettings((prev) => ({ ...prev, ...newSettings }));
   };
 
-  // Reset to default
-  const resetToDemoData = () => {
+  // Reset current store to empty fresh state
+  const resetStoreToEmpty = () => {
+    setProducts([]);
+    setSuppliers([]);
+    setSales([]);
+    setPurchases([]);
+  };
+
+  // Load demo sample items into current store
+  const loadSampleData = () => {
     setProducts(INITIAL_PRODUCTS);
     setSuppliers(INITIAL_SUPPLIERS);
     setSales(INITIAL_SALES);
     setPurchases(INITIAL_PURCHASES);
-    setSettings(INITIAL_SETTINGS);
-    setRegisteredUsers([
-      {
-        id: 'u_admin',
-        name: 'Admin User',
-        username: 'admin',
-        password: 'password123',
-        role: 'Administrator',
-      },
-      {
-        id: 'u_student',
-        name: 'Student Operator',
-        username: 'student',
-        password: 'student123',
-        role: 'Student / Cashier',
-      },
-    ]);
-    localStorage.removeItem('kirana_products');
-    localStorage.removeItem('kirana_suppliers');
-    localStorage.removeItem('kirana_sales');
-    localStorage.removeItem('kirana_purchases');
-    localStorage.removeItem('kirana_settings');
-    localStorage.removeItem('kirana_users');
+  };
+
+  // Reset everything to original demo state
+  const resetToDemoData = () => {
+    const demo = getDemoStoreState();
+    setProducts(demo.products);
+    setSuppliers(demo.suppliers);
+    setSales(demo.sales);
+    setPurchases(demo.purchases);
+    setSettings(demo.settings);
+    localStorage.removeItem('martify_demo_store');
   };
 
   // Computed metrics for Dashboard
@@ -418,6 +462,8 @@ export function StoreProvider({ children }) {
         purchases,
         recordPurchase,
         resetToDemoData,
+        resetStoreToEmpty,
+        loadSampleData,
         lowStockProducts,
         todaySalesTotal,
         todayOrdersCount,

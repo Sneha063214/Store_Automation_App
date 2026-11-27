@@ -12,10 +12,11 @@ import {
 } from 'lucide-react';
 
 export default function Settings() {
-  const { settings, updateSettings, resetToDemoData } = useStore();
+  const { settings, updateSettings, resetToDemoData, resetStoreToEmpty, loadSampleData, user } = useStore();
   const [formData, setFormData] = useState({ ...settings });
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [resetConfirm, setResetConfirm] = useState(false);
+  const [sampleConfirm, setSampleConfirm] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -25,9 +26,8 @@ export default function Settings() {
   };
 
   const handleReset = () => {
-    resetToDemoData();
+    resetStoreToEmpty();
     setResetConfirm(false);
-    window.location.reload();
   };
 
   return (
@@ -172,16 +172,39 @@ export default function Settings() {
         </form>
       </div>
 
-      {/* Demo Data Management Card */}
-      <div className="bg-white border border-gray-200 rounded-xl shadow-xs p-5">
+      {/* Store Data Management Card */}
+      <div className="bg-white border border-gray-200 rounded-xl shadow-xs p-5 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+          <div>
+            <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+              <RefreshCw className="w-4 h-4 text-sky-600" />
+              <span>Load Sample Demo Data</span>
+            </h3>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Populate this store account with realistic Kirana sample products, suppliers, and sales.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              loadSampleData();
+              setSavedSuccess(true);
+              setTimeout(() => setSavedSuccess(false), 3000);
+            }}
+            className="px-4 py-2 text-xs font-medium text-sky-700 hover:bg-sky-50 border border-sky-300 rounded-lg transition-colors whitespace-nowrap"
+          >
+            Load Sample Products
+          </button>
+        </div>
+
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-              <RefreshCw className="w-4 h-4 text-gray-500" />
-              <span>Demo Sample Data</span>
+              <AlertTriangle className="w-4 h-4 text-red-500" />
+              <span>Clear / Reset Store</span>
             </h3>
             <p className="text-xs text-gray-500 mt-0.5">
-              Reset all inventory, sales, products and supplier lists back to default Kirana sample data.
+              Clear all products, sales, and purchases in your account and return to a blank store.
             </p>
           </div>
           <button
@@ -189,7 +212,7 @@ export default function Settings() {
             onClick={() => setResetConfirm(true)}
             className="px-4 py-2 text-xs font-medium text-red-600 hover:bg-red-50 border border-red-200 rounded-lg transition-colors whitespace-nowrap"
           >
-            Reset to Sample Data
+            Reset to Blank Store
           </button>
         </div>
       </div>
