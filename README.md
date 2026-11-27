@@ -7,8 +7,8 @@
 ## 🌐 Live Deployment (Render)
 
 - **Deployed Application Link:**  
-  👉 **`https://<YOUR-RENDER-APP-NAME>.onrender.com`**  
-  *(Replace `<YOUR-RENDER-APP-NAME>` with your live Render deployment URL if not already updated)*
+  👉 **https://martify-33ku.onrender.com**  
+  
 
 ---
 
@@ -29,8 +29,7 @@
 
 The system includes pre-configured demo user accounts with working authentication. Use the credentials below to log in:
 
-| Role | Username | Password | Role Description & Permissions |
-| :--- | :--- | :--- | :--- |
+
 | **Administrator (Admin)** | `admin` | `password123` | **Full Store Control:** Access to POS Billing, Inventory Tracking, Product Catalog (Add/Edit/Delete), Purchase Inward Entries, Supplier Directory, Sales History, and Store Settings & Data Reset. |
 | **Student / Cashier** | `student` | `student123` | **Counter & Trainee Operations:** Access to POS Billing Counter, Item Lookup, Low-Stock Monitoring, Customer Bill Generation, and Inward Stock Verification. |
 
