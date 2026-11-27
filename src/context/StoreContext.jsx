@@ -17,6 +17,29 @@ export function StoreProvider({ children }) {
     return saved ? JSON.parse(saved) : null;
   });
 
+  // Registered users stored in localStorage
+  const [registeredUsers, setRegisteredUsers] = useState(() => {
+    const saved = localStorage.getItem('kirana_users');
+    return saved
+      ? JSON.parse(saved)
+      : [
+          {
+            id: 'u_admin',
+            name: 'Admin User',
+            username: 'admin',
+            password: 'password123',
+            role: 'Administrator',
+          },
+          {
+            id: 'u_student',
+            name: 'Student Operator',
+            username: 'student',
+            password: 'student123',
+            role: 'Student / Cashier',
+          },
+        ];
+  });
+
   // Settings
   const [settings, setSettings] = useState(() => {
     const saved = localStorage.getItem('kirana_settings');
@@ -57,6 +80,10 @@ export function StoreProvider({ children }) {
   }, [user]);
 
   useEffect(() => {
+    localStorage.setItem('kirana_users', JSON.stringify(registeredUsers));
+  }, [registeredUsers]);
+
+  useEffect(() => {
     localStorage.setItem('kirana_settings', JSON.stringify(settings));
   }, [settings]);
 
@@ -76,44 +103,105 @@ export function StoreProvider({ children }) {
     localStorage.setItem('kirana_purchases', JSON.stringify(purchases));
   }, [purchases]);
 
-  // Auth functions
+  // Auth functions: Login
   const login = (username, password) => {
     const cleanUser = username.trim().toLowerCase();
     const cleanPass = password.trim();
 
-    if (cleanUser === "admin" && (cleanPass === "password123" || cleanPass === "admin123")) {
+    // 1. Check registeredUsers in localStorage
+    const foundUser = registeredUsers.find(
+      (u) => u.username.toLowerCase() === cleanUser
+    );
+
+    if (foundUser && foundUser.password === cleanPass) {
       const loggedInUser = {
-        username: "admin",
-        name: "Admin User",
-        role: "Administrator",
+        username: foundUser.username,
+        name: foundUser.name,
+        role: foundUser.role,
       };
       setUser(loggedInUser);
       return { success: true };
     }
 
-    if (cleanUser === "student" && (cleanPass === "student123" || cleanPass === "password123")) {
-      const loggedInUser = {
-        username: "student",
-        name: "Student Operator",
-        role: "Student / Cashier",
-      };
+    // 2. Default Fallback demo checks
+    if (cleanUser === 'admin' && (cleanPass === 'password123' || cleanPass === 'admin123')) {
+      const loggedInUser = { username: 'admin', name: 'Admin User', role: 'Administrator' };
+      setUser(loggedInUser);
+      return { success: true };
+    }
+    if (cleanUser === 'student' && (cleanPass === 'student123' || cleanPass === 'password123')) {
+      const loggedInUser = { username: 'student', name: 'Student Operator', role: 'Student / Cashier' };
       setUser(loggedInUser);
       return { success: true };
     }
 
     if (
       (cleanUser === DEMO_USER.username && cleanPass === DEMO_USER.password) ||
-      (cleanUser.length >= 3 && cleanPass.length >= 4) // forgiving for demo purposes
+      (cleanUser.length >= 3 && cleanPass.length >= 4)
     ) {
       const loggedInUser = {
         username: cleanUser,
         name: cleanUser.charAt(0).toUpperCase() + cleanUser.slice(1),
-        role: cleanUser === "admin" ? "Administrator" : "Student / Cashier",
+        role: cleanUser === 'admin' ? 'Administrator' : 'Student / Cashier',
       };
       setUser(loggedInUser);
       return { success: true };
     }
-    return { success: false, message: "Invalid username or password. Use admin / password123 or student / student123" };
+
+    return {
+      success: false,
+      message: 'Invalid username or password. Check credentials or create a new account.',
+    };
+  };
+
+  // Auth functions: Register / Create New Account
+  const register = (userData) => {
+    const cleanUser = userData.username?.trim().toLowerCase();
+    const cleanPass = userData.password?.trim();
+    const cleanName = userData.name?.trim();
+    const role = userData.role || 'Student / Cashier';
+
+    if (!cleanUser || !cleanPass || !cleanName) {
+      return { success: false, message: 'Please fill in all required fields.' };
+    }
+    if (cleanUser.length < 3) {
+      return { success: false, message: 'Username must be at least 3 characters.' };
+    }
+    if (cleanPass.length < 4) {
+      return { success: false, message: 'Password must be at least 4 characters.' };
+    }
+
+    // Check if username already exists in registeredUsers
+    const exists = registeredUsers.some(
+      (u) => u.username.toLowerCase() === cleanUser
+    );
+    if (exists || cleanUser === 'admin' || cleanUser === 'student') {
+      return {
+        success: false,
+        message: 'This username is already taken. Please choose another username.',
+      };
+    }
+
+    const newUser = {
+      id: 'u_' + Date.now(),
+      name: cleanName,
+      username: cleanUser,
+      password: cleanPass,
+      role: role,
+      createdAt: new Date().toISOString(),
+    };
+
+    setRegisteredUsers((prev) => [...prev, newUser]);
+
+    // Automatically log in the user
+    const loggedInUser = {
+      username: newUser.username,
+      name: newUser.name,
+      role: newUser.role,
+    };
+    setUser(loggedInUser);
+
+    return { success: true, user: loggedInUser };
   };
 
   const logout = () => {
@@ -266,17 +354,33 @@ export function StoreProvider({ children }) {
     setSales(INITIAL_SALES);
     setPurchases(INITIAL_PURCHASES);
     setSettings(INITIAL_SETTINGS);
+    setRegisteredUsers([
+      {
+        id: 'u_admin',
+        name: 'Admin User',
+        username: 'admin',
+        password: 'password123',
+        role: 'Administrator',
+      },
+      {
+        id: 'u_student',
+        name: 'Student Operator',
+        username: 'student',
+        password: 'student123',
+        role: 'Student / Cashier',
+      },
+    ]);
     localStorage.removeItem('kirana_products');
     localStorage.removeItem('kirana_suppliers');
     localStorage.removeItem('kirana_sales');
     localStorage.removeItem('kirana_purchases');
     localStorage.removeItem('kirana_settings');
+    localStorage.removeItem('kirana_users');
   };
 
   // Computed metrics for Dashboard
   const lowStockProducts = products.filter((p) => p.stock <= p.minStock);
 
-  // Today's metrics (matches current calendar day)
   const isToday = (isoString) => {
     const d = new Date(isoString);
     const today = new Date();
@@ -296,7 +400,9 @@ export function StoreProvider({ children }) {
       value={{
         user,
         login,
+        register,
         logout,
+        registeredUsers,
         settings,
         updateSettings,
         products,
